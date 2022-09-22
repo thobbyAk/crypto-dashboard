@@ -8,11 +8,11 @@ const Coin = ({ coinDetails }) => {
 	const [coinPrice, setCoinPrice] = useState(0.0);
 	const [usdPrice, setUsdPrice] = useState(0.0);
 	const [chartData, setChartData] = useState({
-		labels: coinDetails.tickers.map((crypto) => crypto.timestamp),
+		labels: coinDetails?.tickers.map((crypto) => crypto?.timestamp),
 		datasets: [
 			{
 				label: "Price in USD",
-				data: coinDetails.tickers.map((crypto) => crypto.converted_last.usd),
+				data: coinDetails?.tickers.map((crypto) => crypto?.converted_last.usd),
 				borderColor: "rgb(75, 192, 192)",
 				backgroundColor: "rgb(75, 192, 192)",
 				borderWidth: 1,
@@ -230,12 +230,12 @@ const Coin = ({ coinDetails }) => {
 								href={`https://etherscan.io/address/${coinDetails?.platforms?.ethereum}`}
 								passHref
 							>
-								<button
+								<a
 									className="
               dark:focus:outline-none dark:focus:text-white dark:hover:bg-sky-600 dark:hover:text-white dark:text-white disabled:opacity-50 focus:outline-none focus:text-white hover:bg-cyan-700 hover:text-white bg-cyan-600 border border-transparent font-medium inline-flex items-center rounded-md text-white justify-center px-2.5 py-1.5 text-xs"
 								>
 									View on Etherscan
-								</button>
+								</a>
 							</Link>
 						</div>
 						<div>
@@ -378,29 +378,44 @@ const Coin = ({ coinDetails }) => {
 	);
 };
 
-export const getStaticProps = async (context) => {
+export const getServerSideProps = async (context) => {
 	const res = await fetch(
 		`https://api.coingecko.com/api/v3/coins/${context.params.id}`
 	);
 	const coinDetails = await res.json();
-	return {
-		props: {
-			coinDetails,
-		},
-	};
+	if (coinDetails) {
+		return {
+			props: {
+				coinDetails,
+			},
+		};
+	} else {
+		return {
+			notFound: true,
+		};
+	}
 };
 
-export const getStaticPaths = async () => {
-	const res = await fetch(
-		`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false`
-	);
-	const marketData = await res.json();
-	const ids = marketData.map((data) => data.id);
-	const paths = ids.map((id) => ({ params: { id: id.toString() } }));
+// export const getStaticPaths = async () => {
+// 	const res = await fetch(
+// 		`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false`
+// 	);
+// 	console.log("res", res);
 
-	return {
-		paths,
-		fallback: false,
-	};
-};
+// 	const marketData = await res.json();
+// 	if (marketData) {
+// 		const ids = marketData.map((data) => data.id);
+// 		if (ids) {
+// 			const paths = ids.map((id) => ({ params: { id: id.toString() } }));
+// 			return {
+// 				paths,
+// 				fallback: false,
+// 			};
+// 		}
+// 	} else {
+// 		return {
+// 			notFound: true,
+// 		};
+// 	}
+// };
 export default Coin;

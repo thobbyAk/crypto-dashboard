@@ -1,10 +1,11 @@
-import Link from "next/link";
 import react, { useContext, useEffect, useState } from "react";
 import Pagination from "../components/Pagination";
 import { GlobalContext } from "../context/GlobalState";
 import { currencyFormat, currencyFormatToAbs, round } from "../lib/utils";
+import { useRouter } from "next/router";
 
 export default function Home() {
+	const router = useRouter();
 	const { marketData, addUser, users } = useContext(GlobalContext);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [dataPerPage] = useState(10);
@@ -14,6 +15,14 @@ export default function Home() {
 	const indexOfFirstData = indexOfLastData - dataPerPage;
 	const currentData = marketData.slice(indexOfFirstData, indexOfLastData);
 
+	const goToCoin = (id) => {
+		if (id !== "tether-gold") {
+			router.push({
+				pathname: "/coin/[id]",
+				query: { id: id },
+			});
+		}
+	};
 	return (
 		<div className="py-6">
 			<div className="mx-auto max-w-7xl px-4 ">
@@ -75,58 +84,62 @@ export default function Home() {
 									</thead>
 									<tbody className="divide-y divide-gray-200 bg-dark">
 										{currentData.map((data) => (
-											<Link key={data.id} href={`/coin/${data.id}`} passHref>
-												<tr className="cursor-pointer hover:bg-neutral-800">
-													<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
-														<div className="text-gray-300">
-															{" "}
-															&nbsp; &nbsp;{data?.market_cap_rank}
+											<tr
+												key={data?.id}
+												className="cursor-pointer hover:bg-neutral-800"
+												onClick={() => {
+													goToCoin(data.id);
+												}}
+											>
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
+													<div className="text-gray-300">
+														{" "}
+														&nbsp; &nbsp;{data?.market_cap_rank}
+													</div>
+												</td>
+												<td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+													<div className="flex items-center">
+														<div className="h-10 w-10 flex-shrink-0">
+															<img
+																className="h-10 w-10 rounded-full"
+																src={data.image}
+																alt=""
+															/>
 														</div>
-													</td>
-													<td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-														<div className="flex items-center">
-															<div className="h-10 w-10 flex-shrink-0">
-																<img
-																	className="h-10 w-10 rounded-full"
-																	src={data.image}
-																	alt=""
-																/>
-															</div>
-															<div className="ml-4">
-																<div className="font-medium text-gray-300">{data.name}</div>
-																<div className="text-gray-200">{data.symbol.toUpperCase()}</div>
-															</div>
+														<div className="ml-4">
+															<div className="font-medium text-gray-300">{data.name}</div>
+															<div className="text-gray-200">{data.symbol.toUpperCase()}</div>
 														</div>
-													</td>
-													<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
-														<div className="text-gray-300">
-															{currencyFormat(data?.current_price)}
-														</div>
-													</td>
+													</div>
+												</td>
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
+													<div className="text-gray-300">
+														{currencyFormat(data?.current_price)}
+													</div>
+												</td>
 
-													<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
-														{data.market_cap_change_percentage_24h > 0 ? (
-															<span className="inline-flex  bpx-2 text-xs font-semibold leading-5 text-green-800">
-																{round(data.market_cap_change_percentage_24h)}%
-															</span>
-														) : (
-															<span className="inline-flex  bpx-2 text-xs font-semibold leading-5 text-red-800">
-																{round(data.market_cap_change_percentage_24h)}%
-															</span>
-														)}
-													</td>
-													<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
-														<div className="text-gray-300">
-															{currencyFormatToAbs(data?.total_volume)}
-														</div>
-													</td>
-													<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
-														<div className="text-gray-300">
-															{currencyFormatToAbs(data?.market_cap)}
-														</div>
-													</td>
-												</tr>
-											</Link>
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
+													{data.market_cap_change_percentage_24h > 0 ? (
+														<span className="inline-flex  bpx-2 text-xs font-semibold leading-5 text-green-800">
+															{round(data.market_cap_change_percentage_24h)}%
+														</span>
+													) : (
+														<span className="inline-flex  bpx-2 text-xs font-semibold leading-5 text-red-800">
+															{round(data.market_cap_change_percentage_24h)}%
+														</span>
+													)}
+												</td>
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
+													<div className="text-gray-300">
+														{currencyFormatToAbs(data?.total_volume)}
+													</div>
+												</td>
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-200">
+													<div className="text-gray-300">
+														{currencyFormatToAbs(data?.market_cap)}
+													</div>
+												</td>
+											</tr>
 										))}
 									</tbody>
 								</table>
